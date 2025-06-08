@@ -1,30 +1,63 @@
 mod post;
 mod storage;
+mod cli;
 
 use post::{Category, Post};
-use storage::{save_posts, load_posts};
+use storage::{load_posts, save_posts};
+use cli::{Cli, Commands};
+
+use clap::Parser;
+
+/// Convert a string (like "tech") to the Category enum
+fn parse_category(cat: &str) -> Category {
+    match cat.to_lowercase().as_str() {
+        "tech" => Category::Tech,
+        "lifestyle" => Category::Lifestyle,
+        "travel" => Category::Travel,
+        _ => Category::Uncategorized,
+    }
+}
 
 fn main() {
-    // Load all the existing posts
+    let args = Cli::parse(); // Parse command-line args
     let mut posts = load_posts().expect("Failed to load posts");
 
-    let new_post = Post {
-        id: posts.len() as u32 + 1, 
-        title: "New Post Test".to_string(), 
-        content: "This is a CLI Blogging platform.\nIt has file storage as well".to_string(), 
-        category: Category::Uncategorized, 
-        author: "Dhruv".to_string(), 
-    };
+    match args.command {
+        Commands::Add {
+            title,
+            content,
+            category,
+            author,
+        } => {
+            let post = Post {
+                id: posts.len() as u32 + 1,
+                title,
+                content,
+                category: parse_category(&category),
+                author,
+            };
+            posts.push(post);
+            save_posts(&posts).expect("Failed to save posts");
+            println!("Post added!");
+        }
 
-    // Add new post to the list
-    posts.push(new_post);
+        Commands::List => {
+            if posts.is_empty() {
+                println!("No posts yet.");
+            } else {
+                for post in posts {
+                    println!(
+                        "{} | {} | {:?} | by {}",
+                        post.id, post.title, post.category, post.author
+                    );
+                }
+            }
+        }
 
-    // Save it to the disk
-    save_posts(&posts).expect("Failed to save posts");
-
-    // Print to the screen
-    println!("All posts: ");
-    for post in posts {
-        println!("{}: {}", post.id, post.title);
+        Commands::Clear => {
+            posts.clear();
+            save_posts(&posts).expect("Failed to save posts");
+            println!("All posts cleared.");
+        }
     }
 }
