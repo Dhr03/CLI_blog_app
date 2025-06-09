@@ -1,12 +1,16 @@
 use std::fs::{self, File};
 use std::io::{BufReader, BufWriter};
 use std::path::Path;
+
 use crate::post::Post;
 use crate::user::User;
+use crate::comment::Comment;
+
 use serde_json::Result;
 
 const POSTS_FILE: &str = "data/posts.json";
 const USERS_FILE: &str = "data/users.json";
+const COMMENTS_FILE: &str = "data/comments.json";
 
 pub fn save_posts(posts: &[Post]) -> Result<()> {
     if let Some(parent) = Path::new(POSTS_FILE).parent() {
@@ -40,6 +44,24 @@ pub fn load_users() -> Result<Vec<User>> {
         return Ok(vec![]);
     }
     let file = File::open(USERS_FILE).unwrap();
+    let reader = BufReader::new(file);
+    serde_json::from_reader(reader)
+}
+
+pub fn save_comments(comments: &[Comment]) -> Result<()> {
+    if let Some(parent) = Path::new(COMMENTS_FILE).parent() {
+        fs::create_dir_all(parent).unwrap();
+    }
+    let file = File::create(COMMENTS_FILE).unwrap();
+    let writer = BufWriter::new(file);
+    serde_json::to_writer_pretty(writer, comments)
+}
+
+pub fn load_comments() -> Result<Vec<Comment>> {
+    if !Path::new(COMMENTS_FILE).exists() {
+        return Ok(vec![]);
+    }
+    let file = File::open(COMMENTS_FILE).unwrap();
     let reader = BufReader::new(file);
     serde_json::from_reader(reader)
 }

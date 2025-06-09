@@ -2,10 +2,12 @@ mod post;
 mod storage;
 mod cli;
 mod user;
+mod comment;
 
 use post::{Category, Post};
 use user::User;
-use storage::{load_posts, save_posts, load_users, save_users};
+use comment::Comment;
+use storage::{load_posts, save_posts, load_users, save_users, load_comments, save_comments};
 use cli::{Cli, Commands};
 use clap::Parser;
 
@@ -62,6 +64,33 @@ fn main() {
             save_posts(&posts).expect("Failed to save posts");
             save_users(&users).expect("Failed to save users");
             println!("Post added!");
+        }
+
+        Commands::Comment {
+            post_id, 
+            content, 
+            author, 
+        } => {
+            let mut comments = load_comments().expect("Failed to load comments");
+
+            if !posts.iter().any(|p| p.id==post_id) {
+                println!("No post found with id {post_id}");
+                return ;
+            }
+            let user_id = get_or_create_user(author, &mut users);
+
+            let comment = Comment {
+                id: comments.len() as u32 + 1,
+                post_id, 
+                user_id, 
+                content, 
+            };
+
+            comments.push(comment);
+            save_comments(&comments).expect("Failed to save comments");
+            save_users(&users).expect("Failed to save users");
+
+            println!("Comment added.");
         }
 
         Commands::List => {

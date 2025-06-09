@@ -21,6 +21,13 @@ pub enum Commands {
         category: String,
     },
 
+    /// Add a commet to a post
+    Comment {
+        post_id: u32, 
+        content: String, 
+        author: String, 
+    }, 
+
     /// List all blog posts
     List,
 
