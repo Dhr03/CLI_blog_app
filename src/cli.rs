@@ -31,6 +31,10 @@ pub enum Commands {
         content: Option<String>, 
     }, 
 
+    Delete {
+        post_id: u32, 
+    }, 
+
     /// Add a commet to a post
     Comment {
         post_id: u32, 

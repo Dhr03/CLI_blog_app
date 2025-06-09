@@ -182,6 +182,29 @@ fn main() {
             println!("No post found with id: {}", post_id);
         }
 
+        Commands::Delete {post_id} => {
+            let original_len = posts.len();
+            posts.retain(|post| post.id != post_id);
+
+            if posts.len() == original_len {
+                println!("No post with id: {post_id}");
+                return ;
+            }
+
+            save_posts(&posts).expect("Failed to save posts after deletion");
+
+            let mut comments = load_comments().expect("Failed to load comments");
+            let original_comment_len = comments.len();
+
+            comments.retain(|c| c.post_id != post_id);
+
+            if comments.len() < original_comment_len {
+                save_comments(&comments).expect("Failed to save comments after deletion");
+            }
+
+            println!("Post {} and its associated comments are deleted", post_id);
+        }
+
         Commands::Clear => {
             posts.clear();
             save_posts(&posts).expect("Failed to save posts");
