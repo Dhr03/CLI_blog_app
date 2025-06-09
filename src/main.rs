@@ -10,6 +10,7 @@ use comment::Comment;
 use storage::{load_posts, save_posts, load_users, save_users, load_comments, save_comments};
 use cli::{Cli, Commands};
 use clap::Parser;
+use std::str::FromStr;
 
 /// Utility: Converts category string to enum
 fn parse_category(cat: &str) -> Category {
@@ -135,6 +136,50 @@ fn main() {
                     }
                 }
             }
+        }
+
+        Commands::Edit {
+            post_id, 
+            title, 
+            content, 
+            category, 
+        } => {
+            let mut updated = false;
+
+            for post in posts.iter_mut() {
+                if post.id == post_id {
+                    if let Some(new_title) = title {
+                        post.title = new_title; 
+                        updated = true;
+                    }
+                    if let Some(new_content) = content {
+                        post.content = new_content;
+                        updated = true;
+                    }
+                    if let Some(cat_str) = category {
+                        match Category::from_str(&cat_str) {
+                            Ok(cat) => {
+                                post.category = cat;
+                                updated = true;
+                            }
+                            Err(_) => {
+                                println!("❌ Invalid category: {}", cat_str);
+                                return;
+                            }
+                        }
+                    }
+
+                    if updated {
+                        save_posts(&posts).expect("Failed to save edited post");
+                        println!("Post {} updated successfully", post_id);
+                    }
+                    else {
+                        println!("Nothing to update.");
+                    }
+                    return; 
+                }
+            }
+            println!("No post found with id: {}", post_id);
         }
 
         Commands::Clear => {

@@ -21,6 +21,16 @@ pub enum Commands {
         category: String,
     },
 
+    Edit {
+        post_id: u32, 
+        #[arg(long)]
+        title: Option<String>, 
+        #[arg(long)]
+        category: Option<String>, 
+        #[arg(long)]
+        content: Option<String>, 
+    }, 
+
     /// Add a commet to a post
     Comment {
         post_id: u32, 
