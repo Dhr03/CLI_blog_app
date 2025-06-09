@@ -17,5 +17,5 @@ pub struct Post {
     pub title: String, 
     pub content: String, 
     pub category: Category, 
-    pub author: String, 
+    pub user_id: u32, 
 }

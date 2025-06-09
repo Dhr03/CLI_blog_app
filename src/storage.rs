@@ -1,37 +1,45 @@
-use std::fs::{self, File};      // read/write files and directories
-use std::io::{BufReader, BufWriter};        // I/O Operations
-use std::path::Path;            // file path handling
+use std::fs::{self, File};
+use std::io::{BufReader, BufWriter};
+use std::path::Path;
+use crate::post::Post;
+use crate::user::User;
+use serde_json::Result;
 
-use crate::post::Post;          // Post struct that we defined
-use serde_json::Result;         // JSON result type
+const POSTS_FILE: &str = "data/posts.json";
+const USERS_FILE: &str = "data/users.json";
 
-const FILE_PATH: &str = "data/posts.json";
-
-/// Save a list of posts to a file in JSON format
 pub fn save_posts(posts: &[Post]) -> Result<()> {
-    // Create parent dir if it doesn't exist
-    if let Some(parent) = Path::new(FILE_PATH).parent() {
+    if let Some(parent) = Path::new(POSTS_FILE).parent() {
         fs::create_dir_all(parent).unwrap();
     }
-    
-    // Create or overwrite a file
-    let file = File::create(FILE_PATH).unwrap();
-    // Buffered writer (for performance)
+    let file = File::create(POSTS_FILE).unwrap();
     let writer = BufWriter::new(file);
-    // JSON pretty writer
     serde_json::to_writer_pretty(writer, posts)
 }
 
-/// Load posts from a file. If file doesn't exist, return empty list
 pub fn load_posts() -> Result<Vec<Post>> {
-    // File doesn't exist
-    if !Path::new(FILE_PATH).exists() {
+    if !Path::new(POSTS_FILE).exists() {
         return Ok(vec![]);
     }
-
-    // Open file and wrap it in buffered reader
-    let file = File::open(FILE_PATH).unwrap();
+    let file = File::open(POSTS_FILE).unwrap();
     let reader = BufReader::new(file);
-    // Deserialize JSON array into Vec<Post>
+    serde_json::from_reader(reader)
+}
+
+pub fn save_users(users: &[User]) -> Result<()> {
+    if let Some(parent) = Path::new(USERS_FILE).parent() {
+        fs::create_dir_all(parent).unwrap();
+    }
+    let file = File::create(USERS_FILE).unwrap();
+    let writer = BufWriter::new(file);
+    serde_json::to_writer_pretty(writer, users)
+}
+
+pub fn load_users() -> Result<Vec<User>> {
+    if !Path::new(USERS_FILE).exists() {
+        return Ok(vec![]);
+    }
+    let file = File::open(USERS_FILE).unwrap();
+    let reader = BufReader::new(file);
     serde_json::from_reader(reader)
 }
