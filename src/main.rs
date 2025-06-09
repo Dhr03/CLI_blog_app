@@ -93,10 +93,12 @@ fn main() {
             println!("Comment added.");
         }
 
-        Commands::List => {
+        Commands::List {with_comments} => {
+            let comments = load_comments().expect("Failed to load comments");
             if posts.is_empty() {
                 println!("No posts yet.");
-            } else {
+            } 
+            else {
                 for post in &posts {
                     let author_name = users
                         .iter()
@@ -108,6 +110,29 @@ fn main() {
                         "{} | {} | {:?} | by {}",
                         post.id, post.title, post.category, author_name
                     );
+                    println!("\t{}", post.content);
+
+                    if with_comments {
+                        let post_comments: Vec<&Comment> = comments
+                            .iter()
+                            .filter(|c| c.post_id == post.id)
+                            .collect();
+                        
+                        if post_comments.is_empty() {
+                            println!("    💬 No comments yet.");
+                        }
+                        else {
+                            for comment in post_comments {
+                                let commenter = users
+                                    .iter()
+                                    .find(|u| u.id == comment.user_id)
+                                    .map(|u| u.name.clone())
+                                    .unwrap_or("Anonymus".to_string());
+                                
+                                println!("      - {}: {}", commenter, comment.content);
+                            }
+                        }
+                    }
                 }
             }
         }

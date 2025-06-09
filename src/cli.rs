@@ -29,7 +29,10 @@ pub enum Commands {
     }, 
 
     /// List all blog posts
-    List,
+    List {
+        #[arg(short, long, default_value_t=false)]
+        with_comments: bool, 
+    },
 
     /// Clear all posts
     Clear,
